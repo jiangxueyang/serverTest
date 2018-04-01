@@ -4,8 +4,6 @@ const Tips = require('../config/tip');
 const db = require('../db/index');
 const fs = require('fs');
 const asyncBusboy = require('async-busboy');
-const _array = require('lodash/array');
-const IS = require('is');
 //创建一篇博客，必须登录
 router.post('/oa/user/addBlog', async (ctx, next) => {
     let data = Utils.filter(ctx.request.body, ['title', 'content', 'tag_id', 'note_id', 'brief', 'publish', 'create_time']),
@@ -45,46 +43,16 @@ router.post('/oa/user/modifyBlog', async (ctx, next) => {
         {key: 'title', type: 'string'},
         {key: 'brief', type: 'string'},
         {key: 'content', type: 'string'},
-        {key: 'tag_id', type: 'array'},
-        {key: 'origin_tag_id', type: 'array'},
         {key: 'publish', type: 'number'}
     ]);
     if (! res) return ctx.body = Tips[1007];
-    let {title, content, tag_id = [], note_id, id, brief, publish = 0, origin_tag_id = [], create_time = ''} = data;
+    let {title, content, note_id, id, brief, publish = 0, create_time = ''} = data;
     create_time = Utils.formatCurrentTime(create_time);
-    let valid = IS['array'](tag_id);
-    let sql = `UPDATE t_blog set title=?,content=?,tag_id=?,note_id=?,brief=?,publish=?,create_time=? WHERE uid=? AND id=?;`,
-        value = [title, content, JSON.stringify(tag_id), note_id, brief, publish, create_time, uid, id];
-    let addArr = _array.difference(tag_id, origin_tag_id), removeArr = _array.difference(origin_tag_id, tag_id);
+    let sql = `UPDATE t_blog set title=?,content=?,note_id=?,brief=?,publish=?,create_time=? WHERE uid=? AND id=?;`,
+        value = [title, content, note_id, brief, publish, create_time, uid, id];
     
     await db.query(sql, value).then(async res => {
-        let removeSql = '', addSql = '';
-        if (removeArr.length > 0) {
-            removeSql = 'DELETE FROM t_blog_tag WHERE uid=? AND blog_id=? AND tag_id IN (';
-            removeArr.forEach(e => {
-                removeSql += `${e},`;
-            });
-            removeSql = removeSql.slice(0, - 1);
-            removeSql += ')';
-            await db.query(removeSql, [uid, id]).then(res => {
-            }).catch(() => {
-                return ctx.body = Tips[1003];
-            })
-        }
-        if (addArr.length > 0) {
-            let create_time = Utils.formatCurrentTime();
-            addSql = 'INSERT INTO t_blog_tag (uid,tag_id,blog_id,create_time) VALUES';
-            addArr.forEach(e => {
-                addSql += `(${uid},${e},${id},"${create_time}"),`;
-            });
-            addSql = addSql.slice(0, - 1);
-            await db.query(addSql).then(res => {
-            
-            }).catch(() => {
-                return ctx.body = Tips[1002];
-            })
-        }
-        ctx.body = {...Tips[0], data: {removeSql, addSql, removeArr, addArr, valid}};
+        ctx.body = Tips[0];
     }).catch(e => {
         ctx.body = Tips[1002];
     })
@@ -171,22 +139,15 @@ router.get('/oa/blog/:id', async (ctx, next) => {
     if (! res) return ctx.body = Tips[1007];
     let {id} = data;
     id = parseInt(id);
-    let sql = `SELECT content,id,title,note_id,brief,create_time,publish  FROM t_blog WHERE id=${id} AND is_delete=0;`,
-        sql1 = `SELECT tag_id  FROM t_blog_tag WHERE blog_id=${id};`;
-    await db.query(sql+sql1).then(res => {
-        let detail = res[0] || [],tags = res[1] || [],arr = [];
+    let sql = `SELECT content,id,title,note_id,brief,create_time,publish  FROM t_blog WHERE id=${id} AND is_delete=0;`;
+    await db.query(sql).then(res => {
+        let detail = res[0] || [];
         if(detail.length >0){
-            detail = detail[0] || {};
-            tags.forEach(e=>{
-                arr.push(parseInt(e.tag_id))
-            })
-            ctx.body = {...Tips[0],data:{
-                ...detail,tag_id:arr
-            }}
+            ctx.body = {...Tips[0],data:detail}
+    
         }else{
             ctx.body = Tips[1003]
         }
-        
     }).catch(e => {
         ctx.body = Tips[1002];
     })
