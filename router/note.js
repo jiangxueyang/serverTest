@@ -1,12 +1,12 @@
 const router = require('koa-router')();
 const Utils = require('../utils');
-const Tips = require('../config/tip');
+const Tips = require('../utils/tip');
 const db = require('../db');
 
 //创建一个笔记本
 router.post('/oa/user/addNote',async (ctx,next)=>{
     let data = Utils.filter(ctx.request.body, ['name']);
-    let {name} = data, uid = ctx.session.uid;
+    let {name} = data, {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'name', type: 'string'}
     ]);
@@ -40,7 +40,7 @@ router.post('/oa/user/addNote',async (ctx,next)=>{
 
 //修改笔记本名称
 router.post('/oa/user/modifyNote', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.body, ['name', 'id']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.body, ['name', 'id']), {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'name', type: 'string'},
         {key: 'id', type: 'number'}
@@ -59,7 +59,7 @@ router.post('/oa/user/modifyNote', async (ctx, next) => {
 
 //删除笔记本
 router.post('/oa/user/removeNote', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.body, ['id']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.body, ['id']), {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'id', type: 'number'}
     ]);
@@ -100,7 +100,7 @@ router.get('/oa/user/noteDetail/:id', async (ctx, next) => {
 //查询我的笔记本列表 type:0 所有 1分页查询
 
 router.get('/oa/user/myNote', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.query, ['pageSize', 'pageNum', 'type']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.query, ['pageSize', 'pageNum', 'type']), {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'type', type: 'number'},
     ]);

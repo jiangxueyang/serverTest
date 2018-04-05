@@ -1,6 +1,6 @@
 const router = require('koa-router')();
 const Utils = require('../utils');
-const Tips = require('../config/tip');
+const Tips = require('../utils/tip');
 const db = require('../db/index');
 const fs = require('fs');
 const path = require('path');
@@ -8,7 +8,7 @@ const asyncBusboy = require('async-busboy');
 // 上传图片
 router.post('/oa/user/upFiles', async (ctx, next) => {
     try {
-        let data = await asyncBusboy(ctx.req), uid = ctx.session.uid;
+        let data = await asyncBusboy(ctx.req), {uid} = ctx.state  || {};
         let { files = [] } = data;
         if(files.length === 0) return ctx.body = Tips[1002];
         let file = files[0];
@@ -40,7 +40,7 @@ router.post('/oa/user/upFiles', async (ctx, next) => {
 
 //删除图片
 router.post('/oa/user/removeImg', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.body, ['name']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.body, ['name']),{uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         { key: 'name', type: 'string' }
     ]);
@@ -83,21 +83,5 @@ router.get('/oa/user/myImg', async (ctx, next) => {
     })
 });
 
-//测试
-router.post('/oa/user/imgTest',async (ctx,next)=>{
-    let data = Utils.filter(ctx.request.body, ['name']), uid = ctx.session.uid;
-    let res = Utils.formatData(data, [
-        { key: 'name', type: 'string' }
-    ]);
-    let {name} = data, create_time = Utils.formatCurrentTime();
-    let sql = 'INSERT INTO t_user_img(name,uid,create_time) VALUES (?,?,?)', value = [name, uid, create_time];
-    await db.query(sql, value).then(res => {
-        ctx.body = {
-            ...Tips[0], data: { name }
-        };
-    }).catch(() => {
-        ctx.body = Tips[1002];
-    })
-    
-});
+
 module.exports = router;

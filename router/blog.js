@@ -1,13 +1,13 @@
 const router = require('koa-router')();
 const Utils = require('../utils');
-const Tips = require('../config/tip');
+const Tips = require('../utils/tip');
 const db = require('../db/index');
 const fs = require('fs');
 const asyncBusboy = require('async-busboy');
 //创建一篇博客，必须登录
 router.post('/oa/user/addBlog', async (ctx, next) => {
     let data = Utils.filter(ctx.request.body, ['title', 'content', 'tag_id', 'note_id', 'brief', 'publish', 'create_time']),
-        uid = ctx.session.uid;
+        {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'note_id', type: 'number'},
         {key: 'title', type: 'string'},
@@ -36,7 +36,7 @@ router.post('/oa/user/addBlog', async (ctx, next) => {
 //修改博客
 router.post('/oa/user/modifyBlog', async (ctx, next) => {
     let data = Utils.filter(ctx.request.body, ['title', 'origin_tag_id', 'content', 'tag_id', 'note_id', 'id', 'brief', 'publish', 'create_time']),
-        uid = ctx.session.uid;
+        {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'note_id', type: 'number'},
         {key: 'id', type: 'number'},
@@ -61,7 +61,7 @@ router.post('/oa/user/modifyBlog', async (ctx, next) => {
 
 //删除博客
 router.post('/oa/user/removeBlog', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.body, ['id']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.body, ['id']), {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'id', type: 'number'}
     ]);
@@ -93,7 +93,7 @@ router.post('/oa/user/changeBlogStatus', async (ctx, next) => {
 
 //分页查询我所有的博客 type:0：我所有的 1 根据笔记本查询
 router.get('/oa/user/myBlog', async (ctx, next) => {
-    let data = Utils.filter(ctx.request.query, ['pageSize', 'pageNum', 'note_id', 'type']), uid = ctx.session.uid;
+    let data = Utils.filter(ctx.request.query, ['pageSize', 'pageNum', 'note_id', 'type']), {uid} = ctx.state  || {};
     let res = Utils.formatData(data, [
         {key: 'note_id', type: 'number'}
     ]);

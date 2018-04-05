@@ -7,5 +7,26 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "jxy",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "kcors": "^2.2.1",
+    "koa": "^2.3.0",
+    "koa-body": "^2.3.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa-compress": "^2.0.0",
+    "koa-error": "^3.0.1",
+    "koa-etag": "^3.0.0",
+    "koa-logger": "^3.1.0",
+    "koa-router": "^7.2.1"
+  },
+  "devDependencies": {
+    "async-busboy": "^0.6.2",
+    "is": "^3.2.1",
+    "jsonwebtoken": "^8.2.0",
+    "locutus": "^2.0.9",
+    "lodash": "^4.17.5",
+    "log4js": "^2.3.12",
+    "md5": "^2.2.1",
+    "mysql": "^2.15.0"
+  }
 }
