@@ -99,7 +99,7 @@ let util = {
         return token;
     },
     verifyToken(token){
-        let cert = fs.readFileSync(path.join(__dirname, '../config/pub.pem'));
+        let cert = fs.readFileSync(path.join(__dirname, '../config/pub.pem')),res = {};
         try{
             let result = jwt.verify(token, cert, {algorithms: ['RS256']}) || {};
             let {exp = 0} = result,current = Math.floor(Date.now()/1000);
